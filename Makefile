@@ -53,6 +53,9 @@ tiles_log    	:= $(shell awk 'BEGIN { printf "%.0f", log($(tiles_2))/log(2) }')
 tiles_log_real  := $(shell awk 'BEGIN { printf "%.0f", log($(tiles))/log(2) }')
 
 GVRUN ?= $(GVSOC_DIR)/install/bin/gvrun
+# The GVSoC platform is compiled for the target, so the mesh size is given in it
+# (magia_v2 is 4x4), as built in GVSoC: e.g. magia_v2:attr.magia_v2/n_tiles_x=2:attr.magia_v2/n_tiles_y=2
+GVRUN_TARGET ?= magia_v2
 GVRUN_ARGS ?= --work-dir $(GVSOC_ABS_PATH)/Documents/test --attr magia/n_tiles_x=$(tiles) --attr magia/n_tiles_y=$(tiles) --trace-level=trace run --trace=kill-module
 
 .PHONY: gvsoc build
@@ -105,7 +108,7 @@ ifndef platform
 	$(error Proper formatting is: make run test=<test_name> platform=rtl|gvsoc)
 endif
 ifeq ($(platform), gvsoc)
-	$(GVRUN) --target magia_v2 --param binary=$(BIN_ABS_PATH)/$(test) run $(GVRUN_ARGS)
+	$(GVRUN) --target $(GVRUN_TARGET) --param binary=$(BIN_ABS_PATH)/$(test) run $(GVRUN_ARGS)
 else ifeq ($(platform), rtl)
 	mkdir -p $(BUILD_DIR) && cd $(BUILD_DIR) && mkdir -p build
 	cp ./build/bin/$(test) $(BUILD_DIR)/build/verif
